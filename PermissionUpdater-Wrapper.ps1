@@ -1,5 +1,5 @@
 # PermissionUpdater-Wrapper.ps1
-# Wrapper-Skript für die automatisierte Ausführung des Berechtigungsskripts als geplante Aufgabe
+# Wrapper-Skript fuer die automatisierte Ausfuehrung des Berechtigungsskripts als geplante Aufgabe
 # Dieses Skript bietet erweiterte Fehlerbehandlung und Logging
 
 $ErrorActionPreference = "Stop"
@@ -34,7 +34,7 @@ function Send-EmailNotification {
         [string]$Body
     )
     
-    # Diese Funktion aktivieren und konfigurieren, wenn E-Mail-Benachrichtigungen gewünscht sind
+    # Diese Funktion aktivieren und konfigurieren, wenn E-Mail-Benachrichtigungen gewuenscht sind
     <#
     $smtpServer = "smtp.ihredomain.de"
     $smtpPort = 25
@@ -55,35 +55,35 @@ function Send-EmailNotification {
 try {
     Write-WrapperLog "Wrapper-Skript wird gestartet..." -Level INFO
     
-    # Prüfe, ob das Hauptskript existiert
+    # Pruefe, ob das Hauptskript existiert
     if (-not (Test-Path $scriptPath)) {
         throw "Hauptskript nicht gefunden: $scriptPath"
     }
     
-    # Prüfe, ob das NTFSSecurity-Modul verfügbar ist
+    # Pruefe, ob das NTFSSecurity-Modul verfuegbar ist
     if (-not (Get-Module -ListAvailable -Name NTFSSecurity)) {
         throw "NTFSSecurity-Modul nicht installiert. Bitte installieren Sie es mit: Install-Module -Name NTFSSecurity -Force"
     }
     
-    # Hauptskript ausführen
-    Write-WrapperLog "Führe Berechtigungsskript aus: $scriptPath" -Level INFO
+    # Hauptskript ausfuehren
+    Write-WrapperLog "Fuehre Berechtigungsskript aus: $scriptPath" -Level INFO
     & $scriptPath
     
-    # Prüfe Exit-Code
+    # Pruefe Exit-Code
     if ($LASTEXITCODE -ne 0) {
         $exitCode = $LASTEXITCODE
         throw "Skript wurde mit Fehlercode $LASTEXITCODE beendet."
     }
     
-    # Erfolgreiche Ausführung
-    Write-WrapperLog "Berechtigungsskript wurde erfolgreich ausgeführt" -Level SUCCESS
+    # Erfolgreiche Ausfuehrung
+    Write-WrapperLog "Berechtigungsskript wurde erfolgreich ausgefuehrt" -Level SUCCESS
     
     # Optional: Erfolgsbenachrichtigung senden
     # Send-EmailNotification -Subject "Berechtigungsaktualisierung erfolgreich" -Body "Die Berechtigungen wurden erfolgreich aktualisiert. Details siehe Logdatei."
 }
 catch {
     $exitCode = if ($exitCode -eq 0) { 1 } else { $exitCode }
-    $errorMessage = "Fehler beim Ausführen des Berechtigungsskripts: $_"
+    $errorMessage = "Fehler beim Ausfuehren des Berechtigungsskripts: $_"
     Write-WrapperLog $errorMessage -Level ERROR
     
     # Fehlerbenachrichtigung senden
@@ -92,6 +92,6 @@ catch {
 finally {
     Write-WrapperLog "Wrapper-Skript beendet mit Exit-Code: $exitCode" -Level INFO
     
-    # Exit-Code zurückgeben
+    # Exit-Code zurueckgeben
     exit $exitCode
 }
