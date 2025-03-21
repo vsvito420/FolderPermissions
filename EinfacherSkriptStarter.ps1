@@ -69,9 +69,64 @@ if (-not (Test-Path $scriptPath)) {
     exit 1
 }
 
+# Pruefe, ob die Aufgaben in der Aufgabenplanung existieren
+$taskNames = @(
+    "BerechtigungenAktualisieren_Zeitplan",
+    "BerechtigungenAktualisieren_FileWatcher"
+)
+$tasksExist = $true
+foreach ($taskName in $taskNames) {
+    $task = Get-ScheduledTask -TaskName $taskName -ErrorAction SilentlyContinue
+    if (-not $task) {
+        $tasksExist = $false
+        Write-Host "Geplante Aufgabe '$taskName' nicht gefunden." -ForegroundColor Yellow
+    }
+}
+
+if (-not $tasksExist) {
+    Write-Host "`nMindestens eine geplante Aufgabe fehlt." -ForegroundColor Yellow
+    $setupTasks = Read-Host "Geplante Aufgaben jetzt einrichten? (J/N)"
+    
+    if ($setupTasks -eq "J") {
+        Write-Host "Richte geplante Aufgaben ein..." -ForegroundColor Cyan
+        $registerTaskPath = Join-Path $PSScriptRoot "Register-PermissionTask.ps1"
+        
+        if (Test-Path $registerTaskPath) {
+            # Pruefe Admin-Rechte
+            $isAdmin = ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
+            if (-not $isAdmin) {
+                Write-Host "Die Einrichtung der Aufgaben benoetigt Administrator-Rechte." -ForegroundColor Yellow
+                Write-Host "Bitte starten Sie dieses Skript neu als Administrator." -ForegroundColor Yellow
+                Read-Host "Druecken Sie Enter zum Beenden"
+                exit 1
+            }
+            
+            # Fuehre Register-PermissionTask.ps1 aus
+            Write-Host "`n>>> RICHTE GEPLANTE AUFGABEN EIN <<<`n" -ForegroundColor Magenta -BackgroundColor Black
+            & $registerTaskPath
+            
+            if ($LASTEXITCODE -eq 0) {
+                Write-Host "Geplante Aufgaben wurden erfolgreich eingerichtet." -ForegroundColor Green
+            } else {
+                Write-Host "Fehler bei der Einrichtung der geplanten Aufgaben (Exit-Code: $LASTEXITCODE)." -ForegroundColor Red
+                $continue = Read-Host "Trotzdem mit der Skriptausfuehrung fortfahren? (J/N)"
+                if ($continue -ne "J") {
+                    exit 1
+                }
+            }
+        } else {
+            Write-Host "FEHLER: Register-PermissionTask.ps1 nicht gefunden: $registerTaskPath" -ForegroundColor Red
+            $continue = Read-Host "Trotzdem mit der Skriptausfuehrung fortfahren? (J/N)"
+            if ($continue -ne "J") {
+                exit 1
+            }
+        }
+    }
+}
+
 # Pruefe, ob das NTFSSecurity-Modul verfuegbar ist
 if (-not (Get-Module -ListAvailable -Name NTFSSecurity)) {
-    Write-Host "WARNUNG: NTFSSecurity-Modul nicht installiert." -ForegroundColor Yellow
+    Write-Host "`nWARNUNG: NTFSSecurity-Modul nicht installiert." -ForegroundColor Yellow
     $installModule = Read-Host "NTFSSecurity-Modul installieren? (J/N)"
     
     if ($installModule -eq "J") {
@@ -82,7 +137,7 @@ if (-not (Get-Module -ListAvailable -Name NTFSSecurity)) {
         Write-Host "Das Skript wird ohne das NTFSSecurity-Modul wahrscheinlich fehlschlagen." -ForegroundColor Yellow
     }
 } else {
-    Write-Host "NTFSSecurity-Modul ist installiert." -ForegroundColor Green
+    Write-Host "`nNTFSSecurity-Modul ist installiert." -ForegroundColor Green
 }
 
 # Bestaetigung vom Benutzer holen
