@@ -1,6 +1,9 @@
 # EinfacherSkriptStarter.ps1
 # Ein sehr einfaches Skript zum Testen des FolderPermissionUpdaters
 
+# Name dieses Skripts für die Protokollierung
+$currentScriptName = "EinfacherSkriptStarter.ps1"
+
 # Funktion zum Anzeigen von Windows-Benachrichtigungen
 function Show-WindowsNotification {
     param(
@@ -89,15 +92,20 @@ $confirm = Read-Host "Fortfahren? (J/N)"
 if ($confirm -eq "J") {
     Write-Host "`nStarte FolderPermissionUpdater.ps1..." -ForegroundColor Cyan
     
+    # Skript-Ausführungshinweis
+    Write-Host "`n>>> SKRIPT-AUSFÜHRUNG: $currentScriptName <<<`n" -ForegroundColor Magenta -BackgroundColor Black
+    
     # Benachrichtigung anzeigen
-    Show-WindowsNotification -Title "Berechtigungsskript" -Message "Das Berechtigungsskript wird ausgefuehrt..." -Type "Info"
+    Show-WindowsNotification -Title "Berechtigungsskript" -Message "Skript '$currentScriptName' startet FolderPermissionUpdater.ps1..." -Type "Info"
     
     # Zeit messen
     $startTime = Get-Date
     
     # Skript ausfuehren
+    Write-Host "`n>>> STARTE HAUPTSKRIPT: $scriptPath <<<`n" -ForegroundColor Magenta -BackgroundColor Black
     & $scriptPath
     $exitCode = $LASTEXITCODE
+    Write-Host "`n>>> HAUPTSKRIPT BEENDET <<<`n" -ForegroundColor Magenta -BackgroundColor Black
     
     # Dauer berechnen
     $endTime = Get-Date
@@ -108,11 +116,11 @@ if ($confirm -eq "J") {
     if ($exitCode -ne 0) {
         Write-Host "Skript wurde mit Fehlercode $exitCode beendet." -ForegroundColor Red
         # Fehlerbenachrichtigung
-        Show-WindowsNotification -Title "FEHLER: Berechtigungsskript" -Message "Das Berechtigungsskript ist mit Fehlercode $exitCode fehlgeschlagen." -Type "Error"
+        Show-WindowsNotification -Title "FEHLER: Berechtigungsskript" -Message "FolderPermissionUpdater.ps1 ist mit Fehlercode $exitCode fehlgeschlagen." -Type "Error"
     } else {
         Write-Host "Skript wurde erfolgreich ausgefuehrt." -ForegroundColor Green
         # Erfolgsbenachrichtigung
-        Show-WindowsNotification -Title "Berechtigungsskript erfolgreich" -Message "Die Berechtigungen wurden erfolgreich aktualisiert." -Type "Info"
+        Show-WindowsNotification -Title "Berechtigungsskript erfolgreich" -Message "FolderPermissionUpdater.ps1 wurde erfolgreich ausgefuehrt." -Type "Info"
     }
     Write-Host "Ausfuehrungsdauer: $([math]::Round($duration, 2)) Sekunden" -ForegroundColor White
     

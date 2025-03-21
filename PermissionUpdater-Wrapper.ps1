@@ -4,6 +4,9 @@
 
 $ErrorActionPreference = "Stop"
 
+# Name dieses Skripts für die Protokollierung
+$currentScriptName = "PermissionUpdater-Wrapper.ps1"
+
 # Funktion zum Anzeigen von Windows-Benachrichtigungen
 function Show-WindowsNotification {
     param(
@@ -77,7 +80,7 @@ function Write-WrapperLog {
     Add-Content -Path $logFile -Value $logMessage
     
     # Farbige Konsolenausgabe
-    $color = @{INFO = 'White'; ERROR = 'Red'; WARNING = 'Yellow'; SUCCESS = 'Green'}[$Level]
+    $color = @{'INFO' = 'White'; 'ERROR' = 'Red'; 'WARNING' = 'Yellow'; 'SUCCESS' = 'Green'}[$Level]
     Write-Host -ForegroundColor $color $logMessage
 }
 
@@ -107,8 +110,8 @@ function Send-EmailNotification {
 
 # Hauptprogramm
 try {
-    Write-WrapperLog "Wrapper-Skript wird gestartet..." -Level INFO
-    Show-WindowsNotification -Title "Berechtigungsskript" -Message "Das Berechtigungsskript wird ausgefuehrt..." -Type "Info"
+    Write-WrapperLog "[$currentScriptName] Wrapper-Skript wird gestartet..." -Level INFO
+    Show-WindowsNotification -Title "Berechtigungsskript" -Message "Skript '$currentScriptName' wird ausgefuehrt..." -Type "Info"
     
     # Pruefe, ob das Hauptskript existiert
     if (-not (Test-Path $scriptPath)) {
@@ -121,8 +124,10 @@ try {
     }
     
     # Hauptskript ausfuehren
-    Write-WrapperLog "Fuehre Berechtigungsskript aus: $scriptPath" -Level INFO
+    Write-WrapperLog "[$currentScriptName] Fuehre Hauptskript aus: $scriptPath" -Level INFO
+    Write-Host "`n>>> STARTE HAUPTSKRIPT: $scriptPath <<<`n" -ForegroundColor Magenta -BackgroundColor Black
     & $scriptPath
+    Write-Host "`n>>> HAUPTSKRIPT BEENDET <<<`n" -ForegroundColor Magenta -BackgroundColor Black
     
     # Pruefe Exit-Code
     if ($LASTEXITCODE -ne 0) {
@@ -131,10 +136,10 @@ try {
     }
     
     # Erfolgreiche Ausfuehrung
-    Write-WrapperLog "Berechtigungsskript wurde erfolgreich ausgefuehrt" -Level SUCCESS
+    Write-WrapperLog "[$currentScriptName] Hauptskript wurde erfolgreich ausgefuehrt" -Level SUCCESS
     
     # Erfolgsbenachrichtigung
-    Show-WindowsNotification -Title "Berechtigungsskript erfolgreich" -Message "Die Berechtigungen wurden erfolgreich aktualisiert." -Type "Info"
+    Show-WindowsNotification -Title "Berechtigungsskript erfolgreich" -Message "Skript '$scriptPath' wurde erfolgreich ausgefuehrt." -Type "Info"
     
     # Optional: E-Mail-Erfolgsbenachrichtigung senden
     # Send-EmailNotification -Subject "Berechtigungsaktualisierung erfolgreich" -Body "Die Berechtigungen wurden erfolgreich aktualisiert. Details siehe Logdatei."
@@ -145,13 +150,13 @@ catch {
     Write-WrapperLog $errorMessage -Level ERROR
     
     # Fehlerbenachrichtigung als Windows-Notification
-    Show-WindowsNotification -Title "FEHLER: Berechtigungsskript" -Message "Das Berechtigungsskript ist fehlgeschlagen. Details in der Logdatei." -Type "Error"
+    Show-WindowsNotification -Title "FEHLER: Berechtigungsskript" -Message "$currentScriptName - Fehler bei Ausfuehrung vom Hauptskript. Details in der Logdatei." -Type "Error"
     
     # Optional: E-Mail-Fehlerbenachrichtigung senden
     # Send-EmailNotification -Subject "FEHLER: Berechtigungsaktualisierung fehlgeschlagen" -Body $errorMessage
 }
 finally {
-    Write-WrapperLog "Wrapper-Skript beendet mit Exit-Code: $exitCode" -Level INFO
+    Write-WrapperLog "[$currentScriptName] Wrapper-Skript beendet mit Exit-Code: $exitCode" -Level INFO
     
     # Exit-Code zurueckgeben
     exit $exitCode

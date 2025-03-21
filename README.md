@@ -5,18 +5,19 @@ Dieses Projekt enthält PowerShell-Skripte zur automatisierten Verwaltung von Be
 ## Übersicht der Skripte
 
 - **FolderPermissionUpdater.ps1** - Hauptskript zur Berechtigungsaktualisierung
-- **PermissionUpdater-Wrapper.ps1** - Wrapper-Skript für robuste Fehlerbehandlung
+- **PermissionUpdater-Wrapper.ps1** - Wrapper-Skript für robuste Fehlerbehandlung mit Windows-Benachrichtigungen
 - **Register-PermissionTask.ps1** - Skript zum Einrichten der geplanten Aufgabe
 - **Check-PermissionUpdater.ps1** - Überwachungsskript zur Statusüberprüfung
 - **settings.json** - Konfigurationsdatei für das Hauptskript
 - **Test-PermissionUpdater.ps1** - Testskript mit ausführlichen Logs zum manuellen Testen
-- **EinfacherSkriptStarter.ps1** - Benutzerfreundliches Skript für schnelle Tests des Hauptskripts
+- **EinfacherSkriptStarter.ps1** - Benutzerfreundliches Skript für schnelle Tests des Hauptskripts mit Windows-Benachrichtigungen
 
 ## Voraussetzungen
 
 - Windows Server mit PowerShell 5.1 oder höher
 - Administratorrechte
 - NTFSSecurity-Modul (wird automatisch geprüft)
+- Optional: BurntToast-Modul für erweiterte Windows-Benachrichtigungen (das Skript funktioniert auch ohne dieses Modul)
 
 ### Installation des NTFSSecurity-Moduls
 
@@ -178,7 +179,25 @@ Die folgenden Logdateien bieten detaillierte Informationen:
 - **testrun-log.txt** - Logdatei des Test-PermissionUpdater.ps1 Skripts
 - **acl_backup_[Datum]_ntfs.json** - Sicherung der ursprünglichen Berechtigungen
 
-## E-Mail-Benachrichtigungen
+## Benachrichtigungen
+
+### Windows-Benachrichtigungen
+
+Sowohl das Wrapper-Skript als auch der einfache Skript-Starter zeigen Windows-Benachrichtigungen an:
+- Bei Skriptstart
+- Bei erfolgreicher Ausführung
+- Bei Fehlern
+
+Die Benachrichtigungen werden auf zwei Arten umgesetzt:
+1. Primär: Über das BurntToast-PowerShell-Modul (falls installiert)
+2. Fallback: Über Windows Forms für grundlegende Systembereich-Benachrichtigungen
+
+Für erweiterte Benachrichtigungsfunktionen empfehlen wir die Installation des BurntToast-Moduls:
+```powershell
+Install-Module -Name BurntToast -Scope CurrentUser -Force
+```
+
+### E-Mail-Benachrichtigungen
 
 Das Wrapper-Skript enthält eine deaktivierte E-Mail-Benachrichtigungsfunktion. Um diese zu aktivieren, bearbeiten Sie den entsprechenden Abschnitt im PermissionUpdater-Wrapper.ps1-Skript.
 
