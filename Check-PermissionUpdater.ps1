@@ -1,14 +1,14 @@
 # Check-PermissionUpdater.ps1
-# Überwachungsskript für das Berechtigungsaktualisierungs-Skript
-# Prüft den Status der letzten Ausführung und zeigt relevante Logdaten an
+# Ueberwachungsskript fuer das Berechtigungsaktualisierungs-Skript
+# Prueft den Status der letzten Ausfuehrung und zeigt relevante Logdaten an
 
 # Konfiguration
 $taskName = "BerechtigungenAktualisieren"  # Name der geplanten Aufgabe
 $mainLogFile = Join-Path $PSScriptRoot "log.txt"  # Hauptlogdatei des Skripts
 $wrapperLogFile = Join-Path $PSScriptRoot "wrapper-log.txt"  # Logdatei des Wrappers
-$maxLogEntries = 10  # Maximale Anzahl der anzuzeigenden Logeinträge
-$errorLevelKeywords = @("ERROR", "FEHLER", "KRITISCH")  # Schlüsselwörter für Fehlersuche
-$warningLevelKeywords = @("WARNING", "WARNUNG")  # Schlüsselwörter für Warnungen
+$maxLogEntries = 10  # Maximale Anzahl der anzuzeigenden Logeintraege
+$errorLevelKeywords = @("ERROR", "FEHLER", "KRITISCH")  # Schluesselwoerter fuer Fehlersuche
+$warningLevelKeywords = @("WARNING", "WARNUNG")  # Schluesselwoerter fuer Warnungen
 
 function Show-TaskInfo {
     try {
@@ -21,7 +21,7 @@ function Show-TaskInfo {
         Write-Host "Status`:" $($task.State) -ForegroundColor White
         
         if ($taskInfo.LastRunTime) {
-            Write-Host "Letzte Ausführung`:" $($taskInfo.LastRunTime) -ForegroundColor White
+            Write-Host "Letzte Ausfuehrung`:" $($taskInfo.LastRunTime) -ForegroundColor White
             
             # Interpretiere den Ergebniscode
             $resultText = switch ($taskInfo.LastTaskResult) {
@@ -29,32 +29,32 @@ function Show-TaskInfo {
                 1 { "Inkorrekte Funktion (1)" }
                 2 { "System konnte den angegebenen Pfad nicht finden (2)" }
                 10 { "Die Umgebung ist falsch (10)" }
-                0x41306 { "Aufgabe ist derzeit ausgeführt (267014)" }
-                0x41301 { "Aufgabe wird bereits ausgeführt (267009)" }
+                0x41306 { "Aufgabe ist derzeit ausgefuehrt (267014)" }
+                0x41301 { "Aufgabe wird bereits ausgefuehrt (267009)" }
                 0x41303 { "Aufgabe konnte nicht gestartet werden (267011)" }
                 0x800704DD { "Der Dienst ist bereits gestartet (0x800704DD)" }
-                default { "Code`:" + $($taskInfo.LastTaskResult) + " - Siehe Windows-Ereignisprotokoll für Details" }
+                default { "Code`:" + $($taskInfo.LastTaskResult) + " - Siehe Windows-Ereignisprotokoll fuer Details" }
             }
             
             $resultColor = if ($taskInfo.LastTaskResult -eq 0) { "Green" } else { "Red" }
             Write-Host "Letztes Ergebnis`:" $resultText -ForegroundColor $resultColor
             
             if ($taskInfo.LastRunTime -lt (Get-Date).AddDays(-1)) {
-                Write-Host "WARNUNG`: Die letzte Ausführung war vor mehr als einem Tag!" -ForegroundColor Yellow
+                Write-Host "WARNUNG`: Die letzte Ausfuehrung war vor mehr als einem Tag!" -ForegroundColor Yellow
             }
         } else {
-            Write-Host "Letzte Ausführung`: Noch nie ausgeführt" -ForegroundColor Yellow
+            Write-Host "Letzte Ausfuehrung`: Noch nie ausgefuehrt" -ForegroundColor Yellow
         }
         
         if ($taskInfo.NextRunTime) {
-            Write-Host "Nächste geplante Ausführung`:" $($taskInfo.NextRunTime) -ForegroundColor White
+            Write-Host "Naechste geplante Ausfuehrung`:" $($taskInfo.NextRunTime) -ForegroundColor White
         } else {
-            Write-Host "Nächste geplante Ausführung`: Nicht geplant" -ForegroundColor Yellow
+            Write-Host "Naechste geplante Ausfuehrung`: Nicht geplant" -ForegroundColor Yellow
         }
     }
     catch {
         Write-Host "FEHLER`: Konnte keine Informationen zur Aufgabe '$taskName' abrufen`:" $_ -ForegroundColor Red
-        Write-Host "Prüfen Sie, ob die Aufgabe existiert und Sie ausreichende Berechtigungen haben." -ForegroundColor Yellow
+        Write-Host "Pruefen Sie, ob die Aufgabe existiert und Sie ausreichende Berechtigungen haben." -ForegroundColor Yellow
     }
 }
 
@@ -99,7 +99,7 @@ function Show-LogEntries {
                 Write-Host $line -ForegroundColor $lineColor
             }
         } else {
-            Write-Host "Keine Logeinträge gefunden." -ForegroundColor Yellow
+            Write-Host "Keine Logeintraege gefunden." -ForegroundColor Yellow
         }
     } else {
         Write-Host "`n$Title`:" -ForegroundColor Cyan
@@ -144,8 +144,8 @@ Write-Host "=========================================" -ForegroundColor Cyan
 Show-TaskInfo
 
 # Zeige Logs
-Show-LogEntries -LogFile $wrapperLogFile -Title "WRAPPER-LOG (LETZTE $maxLogEntries EINTRÄGE)"
-Show-LogEntries -LogFile $mainLogFile -Title "HAUPTSKRIPT-LOG (LETZTE $maxLogEntries EINTRÄGE)"
+Show-LogEntries -LogFile $wrapperLogFile -Title "WRAPPER-LOG (LETZTE $maxLogEntries EINTRAEGE)"
+Show-LogEntries -LogFile $mainLogFile -Title "HAUPTSKRIPT-LOG (LETZTE $maxLogEntries EINTRAEGE)"
 
 # Zeige Zusammenfassung
 Show-Summary
