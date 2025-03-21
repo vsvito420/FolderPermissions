@@ -120,7 +120,33 @@ try {
     
     # Pruefe, ob das NTFSSecurity-Modul verfuegbar ist
     if (-not (Get-Module -ListAvailable -Name NTFSSecurity)) {
-        throw "NTFSSecurity-Modul nicht installiert. Bitte installieren Sie es mit: Install-Module -Name NTFSSecurity -Force"
+        Write-WrapperLog "NTFSSecurity-Modul nicht installiert. Versuche Installation..." -Level WARNING
+        try {
+            # Versuche das Modul systemweit zu installieren
+            # Hinweis: Im SYSTEM-Kontext koennen Administrator-Rechte erforderlich sein
+            Write-WrapperLog "Installiere NTFSSecurity-Modul systemweit (AllUsers)..." -Level INFO
+            if (-not ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
+                Write-WrapperLog "Warnung: Installation erfolgt ohne Admin-Rechte und koennte fehlschlagen." -Level WARNING
+            }
+            
+            # PowerShell-Repository vertrauenswuerdig setzen, wenn noetig
+            Set-PSRepository -Name "PSGallery" -InstallationPolicy Trusted -ErrorAction SilentlyContinue
+            
+            # Modul installieren
+            Install-Module -Name NTFSSecurity -Force -Scope AllUsers -ErrorAction Stop
+            Write-WrapperLog "NTFSSecurity-Modul erfolgreich installiert." -Level SUCCESS
+            
+            # Modul sofort laden
+            Import-Module NTFSSecurity -Force
+        }
+        catch {
+            throw "NTFSSecurity-Modul konnte nicht installiert werden: $_. Bitte installieren Sie es manuell mit: Install-Module -Name NTFSSecurity -Force -Scope AllUsers"
+        }
+    }
+    else {
+        # Stelle sicher, dass das Modul geladen ist
+        Import-Module NTFSSecurity -Force -ErrorAction Stop
+        Write-WrapperLog "NTFSSecurity-Modul ist verfuegbar und wurde geladen." -Level INFO
     }
     
     # Hauptskript ausfuehren
