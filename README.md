@@ -9,6 +9,8 @@ Dieses Projekt enthält PowerShell-Skripte zur automatisierten Verwaltung von Be
 - **Register-PermissionTask.ps1** - Skript zum Einrichten der geplanten Aufgabe
 - **Check-PermissionUpdater.ps1** - Überwachungsskript zur Statusüberprüfung
 - **settings.json** - Konfigurationsdatei für das Hauptskript
+- **Test-PermissionUpdater.ps1** - Testskript mit ausführlichen Logs zum manuellen Testen
+- **EinfacherSkriptStarter.ps1** - Benutzerfreundliches Skript für schnelle Tests des Hauptskripts
 
 ## Voraussetzungen
 
@@ -139,12 +141,41 @@ Führen Sie das Check-PermissionUpdater.ps1-Skript aus, um den Status der geplan
 powershell.exe -ExecutionPolicy Bypass -File "C:\Pfad\zum\Check-PermissionUpdater.ps1"
 ```
 
+### Manuelle Testausführung
+
+Um das Hauptskript manuell auszuführen und zu testen, stehen zwei Hilfsskripte zur Verfügung:
+
+#### EinfacherSkriptStarter.ps1
+
+Ein sehr einfaches, benutzerfreundliches Skript zur schnellen Ausführung des Hauptskripts:
+
+```powershell
+powershell.exe -ExecutionPolicy Bypass -File "EinfacherSkriptStarter.ps1"
+```
+
+- Prüft automatisch, ob das NTFSSecurity-Modul installiert ist und bietet die Installation an
+- Misst die Ausführungszeit und zeigt den Erfolg oder Fehlercode an
+- Zeigt vorhandene Logdateien an
+
+#### Test-PermissionUpdater.ps1
+
+Ein ausführlicheres Testskript mit erweiterten Logging-Funktionen:
+
+```powershell
+powershell.exe -ExecutionPolicy Bypass -File "Test-PermissionUpdater.ps1"
+```
+
+- Detailliertes Logging mit Zeitstempeln und farbiger Konsolenausgabe
+- Prüfung der Voraussetzungen und Modulabhängigkeiten
+- Ausführliche Erfolgs- und Fehlermeldungen
+
 ### Logdateien
 
 Die folgenden Logdateien bieten detaillierte Informationen:
 
 - **log.txt** - Hauptlogdatei des Skripts
-- **wrapper-log.txt** - Logdatei des Wrapper-Skripts
+- **wrapper-log.txt** - Logdatei des Wrapper-Skripts 
+- **testrun-log.txt** - Logdatei des Test-PermissionUpdater.ps1 Skripts
 - **acl_backup_[Datum]_ntfs.json** - Sicherung der ursprünglichen Berechtigungen
 
 ## E-Mail-Benachrichtigungen
