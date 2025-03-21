@@ -155,10 +155,28 @@ try {
     & $scriptPath
     Write-Host "`n>>> HAUPTSKRIPT BEENDET <<<`n" -ForegroundColor Magenta -BackgroundColor Black
     
-    # Pruefe Exit-Code
-    if ($LASTEXITCODE -ne 0) {
+    # Pruefe, ob das Hauptskript erfolgreich war, anhand der Logdatei
+    $mainLogFile = Join-Path $PSScriptRoot "log.txt"
+    $scriptSuccess = $false
+    
+    if (Test-Path $mainLogFile) {
+        $lastLines = Get-Content -Path $mainLogFile -Tail 5
+        foreach ($line in $lastLines) {
+            if ($line -match "\[SUCCESS\].*Skript wurde erfolgreich abgeschlossen") {
+                $scriptSuccess = $true
+                break
+            }
+        }
+    }
+    
+    # Pruefe zusaetzlich auch den Exit-Code, falls verfuegbar
+    if (-not $scriptSuccess -and $LASTEXITCODE -ne 0 -and $LASTEXITCODE -ne $null) {
         $exitCode = $LASTEXITCODE
         throw "Skript wurde mit Fehlercode $LASTEXITCODE beendet."
+    }
+    
+    if (-not $scriptSuccess) {
+        throw "Skript hat keinen eindeutigen Erfolgsstatus in der Logdatei hinterlassen."
     }
     
     # Erfolgreiche Ausfuehrung
