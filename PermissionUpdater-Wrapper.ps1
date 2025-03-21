@@ -3,6 +3,60 @@
 # Dieses Skript bietet erweiterte Fehlerbehandlung und Logging
 
 $ErrorActionPreference = "Stop"
+
+# Funktion zum Anzeigen von Windows-Benachrichtigungen
+function Show-WindowsNotification {
+    param(
+        [Parameter(Mandatory=$true)]
+        [string]$Title,
+        [Parameter(Mandatory=$true)]
+        [string]$Message,
+        [Parameter(Mandatory=$false)]
+        [string]$Type = "Info"
+    )
+    
+    try {
+        # Methode 1: BurntToast-Modul (falls installiert)
+        if (Get-Module -ListAvailable -Name BurntToast) {
+            Import-Module BurntToast
+            
+            # Passe die Parameter entsprechend des Typs an
+            $splat = @{
+                Text = $Title, $Message
+            }
+            
+            if ($Type -eq "Error") {
+                $splat.Sound = 'Windows.Media.Audio.AudioCategory.Other'
+            }
+            
+            New-BurntToastNotification @splat
+            return
+        }
+        
+        # Methode 2: Windows Forms (Fallback)
+        Add-Type -AssemblyName System.Windows.Forms
+        
+        # In einem Hintergrund-Job ausführen, um UI-Elemente zu ermöglichen
+        Start-Job -ScriptBlock {
+            param($title, $message)
+            Add-Type -AssemblyName System.Windows.Forms
+            $global:balloon = New-Object System.Windows.Forms.NotifyIcon
+            $path = (Get-Process -id $pid).Path
+            $balloon.Icon = [System.Drawing.Icon]::ExtractAssociatedIcon($path)
+            $balloon.BalloonTipIcon = if ($args[2] -eq "Error") {"Error"} else {"Info"}
+            $balloon.BalloonTipTitle = $title
+            $balloon.BalloonTipText = $message
+            $balloon.Visible = $true
+            $balloon.ShowBalloonTip(5000)
+            Start-Sleep -Seconds 6  # Zeit zum Anzeigen der Benachrichtigung
+            $balloon.Dispose()
+        } -ArgumentList $Title, $Message, $Type | Wait-Job -Timeout 1 | Remove-Job
+    }
+    catch {
+        Write-WrapperLog "Fehler beim Anzeigen der Windows-Benachrichtigung: $_" -Level WARNING
+    }
+}
+
 $scriptPath = Join-Path $PSScriptRoot "FolderPermissionUpdater.ps1"
 $logFile = Join-Path $PSScriptRoot "wrapper-log.txt"
 $exitCode = 0
@@ -54,6 +108,7 @@ function Send-EmailNotification {
 # Hauptprogramm
 try {
     Write-WrapperLog "Wrapper-Skript wird gestartet..." -Level INFO
+    Show-WindowsNotification -Title "Berechtigungsskript" -Message "Das Berechtigungsskript wird ausgefuehrt..." -Type "Info"
     
     # Pruefe, ob das Hauptskript existiert
     if (-not (Test-Path $scriptPath)) {
@@ -78,7 +133,10 @@ try {
     # Erfolgreiche Ausfuehrung
     Write-WrapperLog "Berechtigungsskript wurde erfolgreich ausgefuehrt" -Level SUCCESS
     
-    # Optional: Erfolgsbenachrichtigung senden
+    # Erfolgsbenachrichtigung
+    Show-WindowsNotification -Title "Berechtigungsskript erfolgreich" -Message "Die Berechtigungen wurden erfolgreich aktualisiert." -Type "Info"
+    
+    # Optional: E-Mail-Erfolgsbenachrichtigung senden
     # Send-EmailNotification -Subject "Berechtigungsaktualisierung erfolgreich" -Body "Die Berechtigungen wurden erfolgreich aktualisiert. Details siehe Logdatei."
 }
 catch {
@@ -86,7 +144,10 @@ catch {
     $errorMessage = "Fehler beim Ausfuehren des Berechtigungsskripts: $_"
     Write-WrapperLog $errorMessage -Level ERROR
     
-    # Fehlerbenachrichtigung senden
+    # Fehlerbenachrichtigung als Windows-Notification
+    Show-WindowsNotification -Title "FEHLER: Berechtigungsskript" -Message "Das Berechtigungsskript ist fehlgeschlagen. Details in der Logdatei." -Type "Error"
+    
+    # Optional: E-Mail-Fehlerbenachrichtigung senden
     # Send-EmailNotification -Subject "FEHLER: Berechtigungsaktualisierung fehlgeschlagen" -Body $errorMessage
 }
 finally {
