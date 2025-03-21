@@ -1,0 +1,14 @@
+# Ignore ACL backup files
+acl_backup_*.json
+
+# Ignore log files
+log.txt
+
+# Windows system files
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Visual Studio Code
+.vscode/
