@@ -105,10 +105,20 @@ if (-not $tasksExist) {
             Write-Host "`n>>> RICHTE GEPLANTE AUFGABEN EIN <<<`n" -ForegroundColor Magenta -BackgroundColor Black
             & $registerTaskPath
             
-            if ($LASTEXITCODE -eq 0) {
-                Write-Host "Geplante Aufgaben wurden erfolgreich eingerichtet." -ForegroundColor Green
+            # Prüfe, ob die Aufgaben jetzt existieren
+            $tasksExistNow = $true
+            foreach ($taskName in $taskNames) {
+                $task = Get-ScheduledTask -TaskName $taskName -ErrorAction SilentlyContinue
+                if (-not $task) {
+                    $tasksExistNow = $false
+                    Write-Host "Aufgabe '$taskName' konnte nicht eingerichtet werden." -ForegroundColor Red
+                }
+            }
+            
+            if ($tasksExistNow) {
+                Write-Host "`nGeplante Aufgaben wurden erfolgreich eingerichtet." -ForegroundColor Green
             } else {
-                Write-Host "Fehler bei der Einrichtung der geplanten Aufgaben (Exit-Code: $LASTEXITCODE)." -ForegroundColor Red
+                Write-Host "`nFehler bei der Einrichtung einiger Aufgaben." -ForegroundColor Red
                 $continue = Read-Host "Trotzdem mit der Skriptausfuehrung fortfahren? (J/N)"
                 if ($continue -ne "J") {
                     exit 1
