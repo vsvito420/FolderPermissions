@@ -4,7 +4,7 @@ Dieses Projekt enthält PowerShell-Skripte zur automatisierten Verwaltung von Be
 
 ## Übersicht der Skripte
 
-- **script6.ps1** - Hauptskript zur Berechtigungsaktualisierung
+- **FolderPermissionUpdater.ps1** - Hauptskript zur Berechtigungsaktualisierung
 - **PermissionUpdater-Wrapper.ps1** - Wrapper-Skript für robuste Fehlerbehandlung
 - **Register-PermissionTask.ps1** - Skript zum Einrichten der geplanten Aufgabe
 - **Check-PermissionUpdater.ps1** - Überwachungsskript zur Statusüberprüfung

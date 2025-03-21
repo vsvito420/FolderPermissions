@@ -3,6 +3,8 @@ acl_backup_*.json
 
 # Ignore log files
 log.txt
+wrapper-log.txt
+file_watcher_log.txt
 
 # Windows system files
 Thumbs.db
