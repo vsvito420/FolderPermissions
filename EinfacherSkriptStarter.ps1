@@ -178,14 +178,38 @@ if ($confirm -eq "J") {
     
     # Ergebnis anzeigen
     Write-Host "`n---------------------------------------------------" -ForegroundColor Cyan
-    if ($exitCode -ne 0) {
+    
+    # Prüfe, ob das Skript erfolgreich war, indem wir die Logdatei analysieren
+    $success = $true
+    $logFile = Join-Path $PSScriptRoot "log.txt"
+    
+    if (Test-Path $logFile) {
+        $errorCount = 0
+        $logContent = Get-Content $logFile
+        foreach ($line in $logContent) {
+            if ($line -match "\[ERROR\]") { 
+                $errorCount++ 
+                $success = $false
+            }
+        }
+        
+        if ($errorCount -gt 0) {
+            Write-Host "Skript wurde mit $errorCount Fehlern in der Logdatei beendet." -ForegroundColor Red
+        }
+    }
+    
+    if ($exitCode -ne 0 -and $exitCode -ne $null) {
         Write-Host "Skript wurde mit Fehlercode $exitCode beendet." -ForegroundColor Red
         # Fehlerbenachrichtigung
         Show-WindowsNotification -Title "FEHLER: Berechtigungsskript" -Message "FolderPermissionUpdater.ps1 ist mit Fehlercode $exitCode fehlgeschlagen." -Type "Error"
-    } else {
+    } elseif ($success) {
         Write-Host "Skript wurde erfolgreich ausgefuehrt." -ForegroundColor Green
         # Erfolgsbenachrichtigung
         Show-WindowsNotification -Title "Berechtigungsskript erfolgreich" -Message "FolderPermissionUpdater.ps1 wurde erfolgreich ausgefuehrt." -Type "Info"
+    } else {
+        Write-Host "Skript wurde mit Warnungen oder Fehlern beendet. Siehe Logdatei fuer Details." -ForegroundColor Yellow
+        # Warnungsbenachrichtigung
+        Show-WindowsNotification -Title "Berechtigungsskript mit Warnungen" -Message "FolderPermissionUpdater.ps1 wurde mit Warnungen oder Fehlern ausgefuehrt. Siehe Logdatei fuer Details." -Type "Info"
     }
     Write-Host "Ausfuehrungsdauer: $([math]::Round($duration, 2)) Sekunden" -ForegroundColor White
     
