@@ -19,25 +19,42 @@ Dieses Projekt enthält PowerShell-Skripte zur automatisierten Verwaltung von Be
 - NTFSSecurity-Modul (wird automatisch geprüft)
 - Optional: BurntToast-Modul für erweiterte Windows-Benachrichtigungen (das Skript funktioniert auch ohne dieses Modul)
 
-### Installation des NTFSSecurity-Moduls
+### NTFSSecurity-Modul
 
-Das NTFSSecurity-Modul kann mit folgendem Befehl installiert werden:
+Das NTFSSecurity-Modul wird für die Berechtigungsverwaltung benötigt. Die Skripte installieren das Modul bei Bedarf automatisch:
+
+- **EinfacherSkriptStarter.ps1** installiert es für den aktuellen Benutzer (CurrentUser-Scope)
+- **PermissionUpdater-Wrapper.ps1** versucht eine systemweite Installation (AllUsers-Scope), wenn es im SYSTEM-Kontext ausgeführt wird
+
+Für eine manuelle Installation kann folgender Befehl verwendet werden:
 
 ```powershell
 Install-Module -Name NTFSSecurity -Scope AllUsers -Force
 ```
 
+**Hinweis zur Ausführung als geplante Aufgabe:** Wenn die Skripte als SYSTEM-Benutzer ausgeführt werden, muss das NTFSSecurity-Modul systemweit (AllUsers-Scope) installiert sein. Die Wrapper-Skripte versuchen diese Installation automatisch, benötigen dafür jedoch unter Umständen Administratorrechte.
+
 ## Einrichtung als geplante Aufgabe
 
-### Methode 1: Automatische Einrichtung
+### Methode 1: Einrichtung über den EinfacherSkriptStarter
 
-1. Führen Sie das Register-PermissionTask.ps1-Skript als Administrator aus:
+Die einfachste Methode ist die Nutzung des EinfacherSkriptStarter.ps1:
 
 ```powershell
-powershell.exe -ExecutionPolicy Bypass -File "C:\Pfad\zum\Register-PermissionTask.ps1"
+powershell.exe -ExecutionPolicy Bypass -File "EinfacherSkriptStarter.ps1"
 ```
 
-2. Das Skript richtet automatisch zwei geplante Aufgaben ein:
+Dieser Starter prüft automatisch, ob die geplanten Aufgaben fehlen, und bietet an, sie einzurichten. Bei Bestätigung führt er das Register-PermissionTask.ps1 aus und richtet alle notwendigen Aufgaben ein. Zusätzlich prüft er auch, ob das NTFSSecurity-Modul installiert ist und installiert es bei Bedarf.
+
+### Methode 2: Direkte Einrichtung über Register-PermissionTask.ps1
+
+Alternativ können Sie das Register-PermissionTask.ps1-Skript direkt als Administrator ausführen:
+
+```powershell
+powershell.exe -ExecutionPolicy Bypass -File "Register-PermissionTask.ps1"
+```
+
+Das Skript richtet automatisch zwei geplante Aufgaben ein:
 
    **Zeitgesteuerte Aufgabe:**
    - Aufgabenname: BerechtigungenAktualisieren_Zeitplan
@@ -52,7 +69,7 @@ powershell.exe -ExecutionPolicy Bypass -File "C:\Pfad\zum\Register-PermissionTas
    - Reagiert auf Änderungen im überwachten Ordner
    - Minimale Zeit zwischen Ausführungen: 15 Minuten
 
-### Methode 2: Manuelle Einrichtung in der Aufgabenplanung
+### Methode 3: Manuelle Einrichtung in der Aufgabenplanung
 
 #### Zeitgesteuerte Aufgabe:
 
