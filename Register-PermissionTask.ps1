@@ -20,10 +20,10 @@ $scriptPath = Join-Path $PSScriptRoot "PermissionUpdater-Wrapper.ps1"
 $executionTimeLimit = (New-TimeSpan -Hours 1)
 $restartCount = 3
 $restartInterval = (New-TimeSpan -Minutes 5)
-# Intervall fuer zeitgesteuerte Ausfuehrung (in Stunden)
-$scheduleIntervalHours = 2
+# Intervall fuer zeitgesteuerte Ausfuehrung (in Minuten)
+$scheduleIntervalMinutes = 15
 # Minimale Zeit zwischen Ausfuehrungen bei aenderungen (in Minuten)
-$repeatMinutes = 30
+$repeatMinutes = 15
 
 # Pruefe, ob das Skript existiert
 if (-not (Test-Path $scriptPath)) {
@@ -147,8 +147,10 @@ try {
     # Erstelle Aktion fuer den FileSystemWatcher-Dienst
     $watcherAction = New-ScheduledTaskAction -Execute $powerShellPath -Argument "-NoProfile -ExecutionPolicy Bypass -File `"$watcherScriptPath`""
     
-    # --- ZEITGESTEUERTE AUFGABE (alle paar Stunden) ---
-    $scheduleTrigger = New-ScheduledTaskTrigger -Once -At (Get-Date) -RepetitionInterval (New-TimeSpan -Hours $scheduleIntervalHours) -RepetitionDuration ([TimeSpan]::MaxValue)
+    # --- ZEITGESTEUERTE AUFGABE (alle paar Minuten) ---
+    # Verwende eine begrenzte Wiederholungsdauer (10 Jahre) statt [TimeSpan]::MaxValue
+    $maxDuration = New-TimeSpan -Days 3650 # ca. 10 Jahre
+    $scheduleTrigger = New-ScheduledTaskTrigger -Once -At (Get-Date) -RepetitionInterval (New-TimeSpan -Minutes $scheduleIntervalMinutes) -RepetitionDuration $maxDuration
     
     # Aufgabeneinstellungen
     $taskSettings = New-ScheduledTaskSettingsSet -ExecutionTimeLimit $executionTimeLimit -RestartCount $restartCount -RestartInterval $restartInterval
@@ -183,7 +185,7 @@ try {
     Write-Host "`nDie geplanten Aufgaben wurden erfolgreich erstellt:" -ForegroundColor Green
     Write-Host "1. Zeitgesteuerte Ausfuehrung:" -ForegroundColor Green
     Write-Host "   - Aufgabenname: $scheduledTaskName" -ForegroundColor Cyan
-    Write-Host "   - Ausfuehrung: Alle $scheduleIntervalHours Stunden" -ForegroundColor Cyan
+    Write-Host "   - Ausfuehrung: Alle $scheduleIntervalMinutes Minuten" -ForegroundColor Cyan
     Write-Host "2. Ereignisgesteuerte Ausfuehrung (FileSystemWatcher):" -ForegroundColor Green
     Write-Host "   - Aufgabenname: $fileWatcherTaskName" -ForegroundColor Cyan
     Write-Host "   - Ausfuehrung: Bei Systemstart als ueberwachungsdienst" -ForegroundColor Cyan
